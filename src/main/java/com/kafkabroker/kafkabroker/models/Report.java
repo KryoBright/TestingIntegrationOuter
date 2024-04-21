@@ -23,7 +23,7 @@ public class Report
     private LocalDateTime beginTime;
     private LocalDateTime endTime;
 
-    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "report")
     private List<WorkEmployee> employees;
 
     @PrePersist

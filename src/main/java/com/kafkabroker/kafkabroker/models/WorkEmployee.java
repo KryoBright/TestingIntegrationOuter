@@ -1,5 +1,6 @@
 package com.kafkabroker.kafkabroker.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,6 +22,7 @@ public class WorkEmployee
     private long hours;
     private Double salary;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "report_id")
     private Report report;

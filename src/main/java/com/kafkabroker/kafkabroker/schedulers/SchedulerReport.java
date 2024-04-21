@@ -1,8 +1,13 @@
 package com.kafkabroker.kafkabroker.schedulers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kafkabroker.kafkabroker.feignclients.DistantWorkTime;
+import com.kafkabroker.kafkabroker.kafka.KafkaProducer;
 import com.kafkabroker.kafkabroker.models.*;
 import com.kafkabroker.kafkabroker.repositories.ReportRepository;
+import com.kafkabroker.kafkabroker.repositories.WorkEmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
@@ -24,12 +29,15 @@ import java.util.List;
 public class SchedulerReport
 {
     private final DistantWorkTime distantWorkTime;
+
     private final ReportRepository reportRepository;
+    private final WorkEmployeeRepository workEmployeeRepository;
+
+    private final KafkaProducer kafkaProducer;
 
     @Scheduled(cron = "${scheduled.cron.expression}")
     @Async
-    public void createReport()
-    {
+    public void createReport() throws JsonProcessingException {
         List<Employee> employeeList = distantWorkTime.readEmployees().getBody();
 
         if (employeeList != null)
@@ -97,9 +105,16 @@ public class SchedulerReport
 
                 for (WorkEmployee workEmployee : workEmployeeList) {
                     workEmployee.setReport(newReport);
+                    workEmployeeRepository.save(workEmployee);
                 }
 
                 reportRepository.save(newReport);
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.registerModule(new JavaTimeModule());
+                String jsonString = objectMapper.writeValueAsString(newReport);
+
+                kafkaProducer.sendMessage("employee.service.reports", jsonString);
 
             }
             else
@@ -144,6 +159,8 @@ public class SchedulerReport
                                     .getStatus()))
                             .build();
 
+
+
                     workEmployeeList.add(workEmployee);
                 }
 
@@ -151,9 +168,16 @@ public class SchedulerReport
 
                 for (WorkEmployee workEmployee : workEmployeeList) {
                     workEmployee.setReport(newReport);
+                    workEmployeeRepository.save(workEmployee);
                 }
 
                 reportRepository.save(newReport);
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.registerModule(new JavaTimeModule());
+                String jsonString = objectMapper.writeValueAsString(newReport);
+
+                kafkaProducer.sendMessage("employee.service.reports", jsonString);
             }
 
 
@@ -162,6 +186,12 @@ public class SchedulerReport
         {
             Report newReport = Report.builder().endTime(LocalDateTime.now()).beginTime(LocalDateTime.now()).employees(null).build();
             reportRepository.save(newReport);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+            String jsonString = objectMapper.writeValueAsString(newReport);
+
+            kafkaProducer.sendMessage("employee.service.reports", jsonString);
         }
 
     }
