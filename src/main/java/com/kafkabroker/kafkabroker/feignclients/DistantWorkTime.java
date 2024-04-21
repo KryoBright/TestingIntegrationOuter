@@ -2,6 +2,8 @@ package com.kafkabroker.kafkabroker.feignclients;
 
 import com.kafkabroker.kafkabroker.models.Employee;
 import com.kafkabroker.kafkabroker.models.FilterAndSorting;
+import com.kafkabroker.kafkabroker.models.PeriodWithPageAndSize;
+import com.kafkabroker.kafkabroker.models.SlotWithScheduleTemplateId;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,12 +19,12 @@ public interface DistantWorkTime
     ResponseEntity<List<Employee>> readEmployees();
 
     @GetMapping("/period/all")
-    Object readPeriods(
+    PeriodWithPageAndSize readPeriods(
             @RequestBody FilterAndSorting filterAndSorting
     );
 
     @GetMapping("/slot/{id}")
-    public Object readSlot(
+    SlotWithScheduleTemplateId readSlot(
             @PathVariable String id
     );
 }
