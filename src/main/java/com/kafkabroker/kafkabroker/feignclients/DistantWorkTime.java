@@ -11,12 +11,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
+import java.util.Map;
 
 @FeignClient(name = "worktime", url = "${client.clientName.url}")
 public interface DistantWorkTime
 {
     @GetMapping("/employee/all")
     ResponseEntity<List<Employee>> readEmployees();
+    @GetMapping("/employee/all")
+    ResponseEntity<List<Map<String, Object>>> readEmployeesMap();
 
     @GetMapping("/period/all")
     PeriodWithPageAndSize readPeriods(
